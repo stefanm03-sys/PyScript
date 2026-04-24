@@ -1,0 +1,77 @@
+?expr: expr "+" term -> add
+     | expr "-" term -> sub
+     | term
+
+?term: term "*" atom -> mul
+     | term "/" atom -> div
+     | term "%%" atom -> mod
+     | term "==" atom -> eq
+     | term "!=" atom -> ineq
+     | term "++" atom -> inc
+     | term "--" atom -> dec
+     | term "**" atom -> expo
+     | term "^" atom -> expo 
+     | atom
+
+?atom: NUMBER
+     | NAME
+     | STRING
+     | "(" expr ")"
+
+funcs: "func" NAME "(" [params] ")" block -> func
+params: param ("," param)*
+param: NAME ":" types
+
+?print_stmt: "console" "." "log" "(" expr ")"
+print_args: expr ("," expr)*
+
+?control_stmt: do_until
+             | do_when
+             | do_process
+
+?do_until: "do" block "until" expr
+block: "{" stmt* "}"
+
+stmt: control_stmt 
+    | print_stmt
+    | expr
+    | decl
+    | let
+    | enums
+    | funcs
+    | ops
+
+?do_when: "do" block "when" expr
+?do_process: "do" block
+
+decl: "const" NAME ( "=" | "is" )expr -> c_var
+let: "let" NAME ( "=" | "is" ) expr -> l_var
+enums: "enum" NAME ( "=" | "is" ) NUMBER -> enum
+
+ops: "is" NAME types expr -> check_true
+   | "isnt" NAME types expr -> check_false
+   | expr "||" expr -> or_op
+   | expr "|||" expr -> and_op
+
+COMMENT: /\/\/[^\n]*/
+BLOCK_COMMENT: /\/\*[\s\S]*?\*\//
+
+%ignore COMMENT
+%ignore BLOCK_COMMENT
+
+
+types: "bool" -> bools
+     | "str" -> str
+     | "num" -> num
+     | "null" -> null
+     | "nil" -> nil
+ 
+
+start: stmt*
+
+
+%import common.ESCAPED_STRING -> STRING
+%import common.NUMBER
+%import common.CNAME -> NAME
+%import common.WS
+%ignore WS

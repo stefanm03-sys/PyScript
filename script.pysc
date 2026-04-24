@@ -1,1 +1,7 @@
 // This is a PyScript comment
+
+let i = 0
+do {
+    let i = i + 1
+    console.log("i is:", i)
+} until i == 3
