@@ -1,8 +1,6 @@
 
 ?expr: expr "+" term -> add
      | expr "-" term -> sub
-     | expr "true"
-     | expr "false"
      | term
      | NUMBER
      | NAME
@@ -37,13 +35,25 @@ stmt: control_stmt
 ?do_when: "do" block "when" expr
 ?do_process: "do" block
 
-decl: "const" NAME "=" expr -> const_decl
-assign: "let" NAME "=" expr -> var
+decl: "const" NAME ( "=" | "is" )expr -> const_var
+assign: "let" NAME ( "=" | "is" ) expr -> var
 
+ops: "is" NAME TYPE expr -> check_true
+   | "isnt" NAME TYPE expr -> check_false
+   | expr "||" expr -> or_op
+   | expr "|||" expr -> and_op
+
+comment: "//" /[^\n]/*
+comments: "/*" /(.|\n)*?/ "*/"
+
+types: NAME -> str
+     | NUMBER -> num
+bool: "false" | "true"
 
 start: stmt*
 
-
+%ignore comment
+%ignore comments
 %import common.NUMBER
 %import common.CNAME -> NAME
 %import common.WS
