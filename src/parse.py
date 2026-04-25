@@ -1,5 +1,7 @@
+from ast import parse
 from numbers import Number
 from pathlib import Path
+import token
 from lark import Lark, Tree, Token # type: ignore
 
 
@@ -60,32 +62,54 @@ class Parse:
 
         if node.data == "false":
             return False
+            
+        if node.data == "blank":
+            return None
         
         if node.data == "var":
-            name = str(node.children[0])
-            return self.vars[name]["value"]
+            name, value = str(node.children[0]), self.exec_node(node.children[1])
+            self.vars[name] = value
+            return value
 
         if node.data == "l_var":
-            name = str(node.children[0])
-            value = self.exec_node(node.children[1])
+            name, value = str(node.children[0]), self.exec_node(node.children[1])
+            if isinstance(value, (int, float)):
+                 var_type = "num"
+            elif isinstance(value, str):
+                var_type = "str"
+            elif value is None:
+                var_type = "blank"
+            else:
+                var_type = "unknown"
+
             self.vars[name] = {
-                "type": "num",
+                "type": var_type,
                 "value": value,
-            }
+                 "const": False,
+             }
             return value
-        
+
         if node.data == "c_var":
             name = str(node.children[0])
-            if name in self.vars:
-                value = self.exec_node(node.children[1])
-                self.vars[name] = {
-                    "type": "num",
-                    "value": value,
-                }
-
+            value = self.exec_node(node.children[1])
+            print("Stored:", name, value)
+            if isinstance(value, (int, float)):
+                 var_type = "num"
+            elif isinstance(value, str):
+                var_type = "str"
+            elif value is None:
+                var_type = "blank"
             else:
-                pass
+                var_type = "unknown"
 
+            self.vars[name] = {
+                "type": var_type,
+                "value": value,
+                "const": True
+             }
+
+            return value
+        
         if node.data == "args":
             return [self.exec_node(child) for child in node.children]
 
@@ -93,10 +117,9 @@ class Parse:
             if not node.children:
                 print()
                 return None
-
-            values = self.exec_node(node.children[0])
-            print(*values)
-            return values
+            else:
+                values = self.exec_node(node.children[0])
+                return values
         
         if node.data == "func":
             name = str(node.children[0])
@@ -129,12 +152,6 @@ class Parse:
         if node.data == "do_process":
             body= node.children[0]
             return self.exec_node(body)
-
-        if node.data == "null":
-            return None
-        
-        if node.data == "nil":
-            return None
 
         # Math
         if node.data == "add":
@@ -181,4 +198,8 @@ if __name__ == "__main__":
     tree = parser.parse(source)
     # print(repr(source))
     # print(tree.pretty())
-    Parse().run(tree)
+    runtime = Parse()
+    runtime.run(tree)
+    print("vars:","\n", runtime.vars)
+    output = Parse().run(tree)
+    print("PyScript:", "\n", output)

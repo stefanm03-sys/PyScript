@@ -42,8 +42,6 @@ print_args: expr ("," expr)* -> args
              | do_process
 
 ?do_until: "do" block "until" expr
-
-
 ?do_when: "do" block "when" expr
 ?do_process: "do" block
 
@@ -66,9 +64,8 @@ BLOCK_COMMENT: /\/\*[\s\S]*?\*\//
 types: "bool" -> bools
      | "str" -> str
      | "num" -> num
-     | "null" -> null
-     | "nil" -> nil
- 
+     | "null" -> blank
+     | "nil" -> blank
 
 start: stmt*
 

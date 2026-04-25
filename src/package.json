@@ -1,0 +1,8 @@
+{
+    "name": "pyscr",
+    "description": "PyScript,  runs on Python and inspired by JS.",
+    "authors": "stefanm03-sys",
+    "version": "1.0.0",
+    "main": "pathToMain",
+    "dependencies": {}
+}

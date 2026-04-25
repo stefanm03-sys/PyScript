@@ -1,2 +1,2 @@
-let i = 0
-console.log(i)
+// comment
+console.log(10)
