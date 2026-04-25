@@ -1,36 +1,24 @@
-?expr: expr "+" term -> add
-     | expr "-" term -> sub
-     | term
+expr: expr "+" term -> add
+    | expr "-" term -> sub
+    | term
 
 ?term: term "*" atom -> mul
      | term "/" atom -> div
      | term "%%" atom -> mod
      | term "==" atom -> eq
      | term "!=" atom -> ineq
-     | term "++" atom -> inc
-     | term "--" atom -> dec
+     | term "++" -> inc
+     | term "--" -> dec
      | term "**" atom -> expo
      | term "^" atom -> expo 
      | atom
 
 ?atom: NUMBER
-     | NAME
+     | NAME -> var
+     | NAME "++" -> inc
+     | NAME "--" -> dec
      | STRING
      | "(" expr ")"
-
-funcs: "func" NAME "(" [params] ")" block -> func
-params: param ("," param)*
-param: NAME ":" types
-
-?print_stmt: "console" "." "log" "(" expr ")"
-print_args: expr ("," expr)*
-
-?control_stmt: do_until
-             | do_when
-             | do_process
-
-?do_until: "do" block "until" expr
-block: "{" stmt* "}"
 
 stmt: control_stmt 
     | print_stmt
@@ -40,6 +28,21 @@ stmt: control_stmt
     | enums
     | funcs
     | ops
+block: "{" stmt* "}"
+
+funcs: "func" NAME "(" [params] ")" block -> func
+params: param ("," param) -> parameters
+param: NAME ":" types
+
+?print_stmt: "console" "." "log" "(" [print_args] ")"
+print_args: expr ("," expr)* -> args
+
+?control_stmt: do_until
+             | do_when
+             | do_process
+
+?do_until: "do" block "until" expr
+
 
 ?do_when: "do" block "when" expr
 ?do_process: "do" block

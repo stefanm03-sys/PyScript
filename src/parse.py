@@ -1,3 +1,4 @@
+from numbers import Number
 from pathlib import Path
 from lark import Lark, Tree, Token # type: ignore
 
@@ -46,52 +47,68 @@ class Parse:
             return result
 
         if node.data == "num":
-            return "num"
+            return Number
 
         if node.data == "bools":
-            return "bool"
+            return bool
 
         if node.data == "str":
-            return "str"
+            return str
 
         if node.data == "true":
             return True
 
         if node.data == "false":
             return False
+        
+        if node.data == "var":
+            name = str(node.children[0])
+            return self.vars[name]["value"]
 
         if node.data == "l_var":
             name = str(node.children[0])
             value = self.exec_node(node.children[1])
-            self.vars[name] = value
+            self.vars[name] = {
+                "type": "num",
+                "value": value,
+            }
             return value
         
         if node.data == "c_var":
             name = str(node.children[0])
             if name in self.vars:
                 value = self.exec_node(node.children[1])
-                self.vars[name] = value
+                self.vars[name] = {
+                    "type": "num",
+                    "value": value,
+                }
+
             else:
                 pass
 
+        if node.data == "args":
+            return [self.exec_node(child) for child in node.children]
+
         if node.data == "print_stmt":
-            values = [self.exec_node(child) for child in node.children]
+            if not node.children:
+                print()
+                return None
+
+            values = self.exec_node(node.children[0])
             print(*values)
             return values
-
-
         
         if node.data == "func":
             name = str(node.children[0])
             if len(node.children) == 3:
-                params = node.children[1]
+                parameters = node.children[1]
                 body = node.children[2]
             else:
-                params = None
+                parameters = None
                 body = node.children[1]
 
             self.funcs[name] = {
-                "params": params,
+                "parameters": parameters,
                 "body": body,
             }
             return None
@@ -103,7 +120,7 @@ class Parse:
             return None
         
         if node.data == "do_until":
-            body, condition = node.children
+            body, condition = node.children[0], node.children[1]
             while True:
                 result = self.exec_node(body)
                 if self.exec_node(condition):
@@ -118,7 +135,6 @@ class Parse:
         
         if node.data == "nil":
             return None
-
 
         # Math
         if node.data == "add":
@@ -142,9 +158,17 @@ class Parse:
         if node.data == "ineq":
             return self.exec_node(node.children[0]) != self.exec_node(node.children[1])
         
-        raise ValueError(f"Unsupported node: {node.data}")
-    
+        if node.data == "inc":
+            name = str(node.children[0])
+            self.vars[name]["value"] += 1
+            return self.vars[name]["value"]
 
+        if node.data == "dec":
+            name = str(node.children[0])
+            self.vars[name]["value"] -= 1
+            return self.vars[name]["value"]
+
+        # raise ValueError(f"Unsupported node: {node.data}")
 
 
 if __name__ == "__main__":
@@ -155,4 +179,6 @@ if __name__ == "__main__":
 
     source = source_path.read_text(encoding="utf-8")
     tree = parser.parse(source)
+    # print(repr(source))
+    # print(tree.pretty())
     Parse().run(tree)
