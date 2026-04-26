@@ -2,7 +2,7 @@ from ast import parse
 from numbers import Number
 from pathlib import Path
 import token
-from lark import Lark, Tree, Token # type: ignore
+from lark import Lark, Tree, Token, Transformer # type: ignore
 
 
 with open("src/grammar.lark", "r", encoding="utf-8") as f:
@@ -29,7 +29,7 @@ class Parse:
             if node.type == "NAME":
                 return str(node)
             raise ValueError(f"Unsupported token: {node.type}")
-
+        
         if not isinstance(node, Tree):
             return node
 
@@ -68,8 +68,10 @@ class Parse:
         
         if node.data == "var":
             name, value = str(node.children[0]), self.exec_node(node.children[1])
-            self.vars[name] = value
-            return value
+            self.vars[name] = {
+                "value": value,
+            }
+            print(value)
 
         if node.data == "l_var":
             name, value = str(node.children[0]), self.exec_node(node.children[1])

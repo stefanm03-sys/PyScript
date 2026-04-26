@@ -35,7 +35,7 @@ params: param ("," param) -> parameters
 param: NAME ":" types
 
 ?print_stmt: "console" "." "log" "(" [print_args] ")"
-print_args: expr ("," expr)* -> args
+?print_args: expr ("," expr)* -> args
 
 ?control_stmt: do_until
              | do_when
