@@ -89,7 +89,7 @@ class Parse:
                 "value": value,
                  "const": False,
              }
-            return value
+            print(value)
 
         if node.data == "c_var":
             name = str(node.children[0])
@@ -110,7 +110,7 @@ class Parse:
                 "const": True
              }
 
-            return value
+            print(value)
         
         if node.data == "args":
             return [self.exec_node(child) for child in node.children]
@@ -121,7 +121,7 @@ class Parse:
                 return None
             else:
                 values = self.exec_node(node.children[0])
-                return values
+                print(values)
         
         if node.data == "func":
             name = str(node.children[0])
