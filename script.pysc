@@ -1,2 +1,4 @@
 // comment
 console.log(10)
+let a = "a"
+console.log("a:", a)

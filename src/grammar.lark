@@ -1,4 +1,4 @@
-expr: expr "+" term -> add
+?expr: expr "+" term -> add
     | expr "-" term -> sub
     | term
 
@@ -20,7 +20,7 @@ expr: expr "+" term -> add
      | STRING
      | "(" expr ")"
 
-stmt: control_stmt 
+?stmt: control_stmt 
     | print_stmt
     | expr
     | decl
@@ -28,11 +28,11 @@ stmt: control_stmt
     | enums
     | funcs
     | ops
-block: "{" stmt* "}"
+?block: "{" stmt* "}"
 
-funcs: "func" NAME "(" [params] ")" block -> func
-params: param ("," param) -> parameters
-param: NAME ":" types
+?funcs: "func" NAME "(" [params] ")" block -> func
+?params: param ("," param) -> parameters
+?param: NAME ":" types
 
 ?print_stmt: "console" "." "log" "(" [print_args] ")"
 ?print_args: expr ("," expr)* -> args
@@ -45,11 +45,11 @@ param: NAME ":" types
 ?do_when: "do" block "when" expr
 ?do_process: "do" block
 
-decl: "const" NAME ( "=" | "is" )expr -> c_var
-let: "let" NAME ( "=" | "is" ) expr -> l_var
-enums: "enum" NAME ( "=" | "is" ) NUMBER -> enum
+?decl: "const" NAME ( "=" | "is" )expr -> c_var
+?let: "let" NAME ( "=" | "is" ) expr -> l_var
+?enums: "enum" NAME ( "=" | "is" ) NUMBER -> enum
 
-ops: "is" NAME types expr -> check_true
+?ops: "is" NAME types expr -> check_true
    | "isnt" NAME types expr -> check_false
    | expr "||" expr -> or_op
    | expr "|||" expr -> and_op
@@ -61,13 +61,13 @@ BLOCK_COMMENT: /\/\*[\s\S]*?\*\//
 %ignore BLOCK_COMMENT
 
 
-types: "bool" -> bools
+?types: "bool" -> bools
      | "str" -> str
      | "num" -> num
      | "null" -> blank
      | "nil" -> blank
 
-start: stmt*
+?start: stmt*
 
 
 %import common.ESCAPED_STRING -> STRING

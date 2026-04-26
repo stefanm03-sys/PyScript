@@ -23,12 +23,19 @@ class Parse:
         return self.exec_node(tree)
 
     def exec_node(self, node):
+
+        if isinstance(node, Tree) and len(node.children) == 1:
+                return self.exec_node(node.children[0])
+
         if isinstance(node, Token):
             if node.type == "NUMBER":
-                return float(node)
+                return float(node.value)
             if node.type == "NAME":
-                return str(node)
-            raise ValueError(f"Unsupported token: {node.type}")
+                name = str(node)
+                if name in self.vars:
+                    return self.vars[name]["value"]
+                raise ValueError(f"Undefined Variable! Check: '{name}'")
+            
         
         if not isinstance(node, Tree):
             return node
@@ -49,22 +56,22 @@ class Parse:
             return result
 
         if node.data == "num":
-            return Number
+            return self.exec_node(node.children[0])
 
         if node.data == "bools":
-            return bool
+            return self.exec_node(node.children[0])
 
         if node.data == "str":
-            return str
+            return self.exec_node(node.children[0])
 
         if node.data == "true":
-            return True
+            return self.exec_node(node.children[0])
 
         if node.data == "false":
-            return False
+            return self.exec_node(node.children[0])
             
         if node.data == "blank":
-            return None
+            return self.exec_node(node.children[0])
         
         if node.data == "var":
             name, value = str(node.children[0]), self.exec_node(node.children[1])
@@ -73,8 +80,13 @@ class Parse:
             }
             print(value)
 
+        if node.data == "get_var":
+            name = str(node.children[0])
+            return self.vars[name]["value"]
+
         if node.data == "l_var":
             name, value = str(node.children[0]), self.exec_node(node.children[1])
+            
             if isinstance(value, (int, float)):
                  var_type = "num"
             elif isinstance(value, str):
@@ -87,14 +99,17 @@ class Parse:
             self.vars[name] = {
                 "type": var_type,
                 "value": value,
-                 "const": False,
+                "const": False,
              }
-            print(value)
+            print(self.vars[name]["value"])
+            return True
 
         if node.data == "c_var":
             name = str(node.children[0])
             value = self.exec_node(node.children[1])
             print("Stored:", name, value)
+            if name in self.vars and self.vars[name].get("const"):
+                raise ValueError(f"Cannot modify constant '{name}'")
             if isinstance(value, (int, float)):
                  var_type = "num"
             elif isinstance(value, str):
@@ -109,19 +124,32 @@ class Parse:
                 "value": value,
                 "const": True
              }
+            print(self.vars[name]["value"])
+            return True
 
-            print(value)
-        
+        if node.data == "expr":
+            return self.exec_node(node.children[0])
+
         if node.data == "args":
-            return [self.exec_node(child) for child in node.children]
+            return [self.exec_node(node.children) for child in node.children]
 
         if node.data == "print_stmt":
             if not node.children:
                 print()
                 return None
-            else:
-                values = self.exec_node(node.children[0])
-                print(values)
+
+            args_node = node.children[0]
+
+            for expr in args_node.children:
+                value = self.exec_node(expr)
+
+                while isinstance(value, Tree):
+                    value = self.exec_node(value.children[0])
+
+                    print(value, end=" ")
+
+            print()
+            return None
         
         if node.data == "func":
             name = str(node.children[0])
@@ -146,7 +174,7 @@ class Parse:
         
         if node.data == "do_until":
             body, condition = node.children[0], node.children[1]
-            while True:
+            while not self.exec_node(condition):
                 result = self.exec_node(body)
                 if self.exec_node(condition):
                     return result
@@ -186,8 +214,9 @@ class Parse:
             name = str(node.children[0])
             self.vars[name]["value"] -= 1
             return self.vars[name]["value"]
+        
 
-        # raise ValueError(f"Unsupported node: {node.data}")
+        raise ValueError(f"Unsupported Node! Check: {node.data}")
 
 
 if __name__ == "__main__":
@@ -199,9 +228,9 @@ if __name__ == "__main__":
     source = source_path.read_text(encoding="utf-8")
     tree = parser.parse(source)
     # print(repr(source))
-    # print(tree.pretty())
+    print(tree.pretty())
+
     runtime = Parse()
-    runtime.run(tree)
-    print("vars:","\n", runtime.vars)
-    output = Parse().run(tree)
+    output = runtime.run(tree)
+    print("vars:", "\n", runtime.vars)
     print("PyScript:", "\n", output)
