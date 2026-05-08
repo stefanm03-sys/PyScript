@@ -1,6 +1,6 @@
 ?expr: expr "+" term -> add
-    | expr "-" term -> sub
-    | term
+     | expr "-" term -> sub
+     | term
 
 ?term: term "*" atom -> mul
      | term "/" atom -> div
@@ -43,7 +43,7 @@
 
 ?do_until: "do" block "until" expr
 ?do_when: "do" block "when" expr
-?do_process: "do" block
+do_process: "do" block -> do_process
 
 ?decl: "const" NAME ( "=" | "is" )expr -> c_var
 ?let: "let" NAME ( "=" | "is" ) expr -> l_var

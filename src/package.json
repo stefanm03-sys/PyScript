@@ -1,6 +1,6 @@
 {
-    "name": "pyscr",
-    "description": "PyScript,  runs on Python and inspired by JS.",
+    "name": "pyscript",
+    "description": "PyScript, runs mainly on Python and inspired by JS. Currently in early development!",
     "authors": "stefanm03-sys",
     "version": "1.0.0",
     "main": "pathToMain",

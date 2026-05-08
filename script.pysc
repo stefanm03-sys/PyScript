@@ -1,4 +1,23 @@
 // comment
 console.log(10)
-let a = "a"
-console.log("a:", a)
+let a = "String"
+console.log("a is:", a)
+
+do { console.log("Do print a:", a) }
+do {
+    console.log("Vertical Block!")
+}
+
+
+let b = 0
+do {
+    console.log(b + 2)
+} when b != 1
+
+do {
+    b++
+} while b != 5
+
+do {
+    b + 1
+} until b == 8
